@@ -3,60 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
-namespace Training_Practice__8
+namespace Training_Practice__8 // 8 - Граф задан матрицей инциденций. Выяснить, является ли он деревом.
 {
     class Program
     {
-        public static void PrintMassiv(int[,] a) // Функция вывода двумерного массива 
+        static int PunktMenu() // Функция выбора пункта меню 
         {
-            Console.CursorTop = Console.CursorTop + 1;
-            Console.WriteLine("Текущая матрица: ");
-            int i, j;
-            for (i = 0; i < a.GetLength(0); i++)
-            {
-                for (j = 0; j < a.GetLength(1); j++)
-                {
-                    Console.Write(a[i, j] + "  ");
-                }
-                Console.WriteLine();
-            }
+            Console.Clear();
+            // Описание переменных и массивов для программы вывода меню
 
-        }
-
-        public static int[,] VvodMassiva2() // Функция ввода двумерного массива 
-        {
-            bool ok;
-            int kstrok, kstolb; // переменные
-            int positionY = Console.CursorTop + 1;
-            Console.CursorTop = positionY;
-
-            do
-            {
-                Console.WriteLine("Введите количество вершин: ");
-                ok = int.TryParse(Console.ReadLine(), out kstrok);
-                if (!ok || kstrok <= 0) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число"); ok = false; }
-            } while (!ok);
-
-            ok = false;
-
-            do
-            {
-                Console.WriteLine("Введите количество ребер: ");
-                ok = int.TryParse(Console.ReadLine(), out kstolb);
-                if (!ok || kstolb <= 0 || kstolb > (kstrok*(kstrok -1)/2)) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число не превышающее {0}", kstrok * (kstrok - 1) / 2); ok = false; }
-            } while (!ok);
-
-            string[] items = { "a) Заполнить матрицу рандомно", "б) Заполнить матрицу вручную" };
-
-            int[,] a = new int[kstrok, kstolb]; // объявим массив 
-
-            int currentIndex = 0, previousIndex = 0;
-            int positionX = 0; positionY = Console.CursorTop + 1;
+            int currentIndex = 0, previousIndex = 0, i;
+            int positionX = 5, positionY = 2;
             bool itemSelected = false;
 
+
+            // Программа вывода меню 
+
+            string[] items = { "1. Использовать готовые тесты", "2. Рандомное заполнение матрицы инциденций", "3. Ручное заполнение матрицы инциденций", "4. Выход" };
+
             //Начальный вывод пунктов меню.
-            for (int i = 0; i < items.Length; i++)
+            for (i = 0; i < items.Length; i++)
             {
                 Console.CursorLeft = positionX;
                 Console.CursorTop = positionY + i;
@@ -101,113 +69,236 @@ namespace Training_Practice__8
                     currentIndex = 0;
             }
             while (!itemSelected);
-
-            Console.ForegroundColor = ConsoleColor.Gray; Console.BackgroundColor = ConsoleColor.Black;
             Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Gray; Console.BackgroundColor = ConsoleColor.Black;
+            return currentIndex;
+        }
 
-            switch (currentIndex)
+        public static void PrintMassiv(int[,] a) // Функция вывода двумерного матрицы 
+        {
+            Console.WriteLine("Матрица инциденций графа: ");
+            int i, j;
+            for (i = 0; i < a.GetLength(0); i++)
             {
-                case 0:
-                    int m, n; // переменные
-                    Random S = new Random();
-                    // заполнение массива случайными элементами
-                    for (m = 0; m < kstolb; m++)
-                    {
-                        int CountV = 0;
-                        for (n = 0; n < kstrok; n++)
-                        {
-                            a[n, m] = S.Next(0, 2); if (a[n, m] == 1) { CountV++; }
-                                if (CountV == 2) { break; }
-                        }
-                        if(CountV < 2)
-                        {
-                            for (n = 0; n < kstrok; n++)
-                            {
-                                if (a[n, m] == 0)
-                                {
-                                    a[n, m] = 1;
-                                    break;
-                                }
+                for (j = 0; j < a.GetLength(1); j++)
+                {
+                    Console.Write(a[i, j] + "  ");
+                }
+                Console.WriteLine();
+            }
+        }
 
-                            }
-                        }
-                    }
-                    break;
+        public static int[,] InputMatrixRandom() // Функция рандомного ввода двумерной матрицы 
+        {
+            Console.CursorTop += 3;
+            bool ok;
+            int kstrok, kstolb; // переменные
 
-                case 1:
-                    for (m = 0; m < kstolb; m++)
-                    {
-                        int CountV = 0;
-                        for (n = 0; n < kstrok; n++)
-                        {
+            do
+            {
+                Console.WriteLine("Введите количество вершин: ");
+                ok = int.TryParse(Console.ReadLine(), out kstrok);
+                if (!ok || kstrok < 2) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число, не менее 2"); ok = false; }
+            } while (!ok);
 
-                            ok = false;
-                            Console.WriteLine("Введите элементы матрицы для {0} ребра: ", m + 1);
-                            do
-                                {
-                                    ok = int.TryParse(Console.ReadLine(), out a[n,m]);
-                                    if (!ok || a[n,m] < 0 || a[n,m] >=2) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите 1 или 0"); ok = false; }
-                                } while (!ok);
-                            if (a[n, m] == 1) { CountV++; }
-                            if (CountV == 2) { break; }
-                        }
-                        if(CountV < 2) { Console.WriteLine("Некорректный ввод. Каждое ребро должно соединять 2 вершины");}
-                    }
-                    break;
+            ok = false;
+
+            do
+            {
+                Console.WriteLine("Введите количество ребер: ");
+                ok = int.TryParse(Console.ReadLine(), out kstolb);
+                if (!ok || kstolb <= 0 || kstolb > (kstrok * (kstrok - 1) / 2)) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число не превышающее {0}", kstrok * (kstrok - 1) / 2); ok = false; }
+            } while (!ok);
+
+            Random S = new Random();
+
+            int[,] a = new int[kstrok, kstolb];
+            for (int i = 0; i < a.GetLength(1); i++)
+            {
+                Thread.Sleep(10);
+                a = RandomEdge(a, i, S.Next(0, a.GetLength(0)));
+                bool TrVa = CheckEdge(a, i);
+                Thread.Sleep(10);
+                while (TrVa) { a = RandomEdge(a, i, S.Next(0, a.GetLength(0))); TrVa = CheckEdge(a, i); }
             }
             return a;
         }
 
-        public static int[,] Delete(int[,] a) // Удаление столбцов в двумерном массиве 
+        public static int[,] InputMatrixManual() // Функция ручного ввода двумерной матрицы 
         {
-            int strok = a.GetLength(0), stobcov = a.GetLength(1), i, j, stolbec = a.GetLength(1), m, x = 0, y = 0;
-            bool estnull = false;
+            Console.CursorTop += 3;
+            bool ok;
+            int kstrok, kstolb; // переменные
 
-            for (i = 0; i < stobcov; i++)
+            do
             {
-                estnull = false;
-                for (j = 0; j < strok; j++)
+                Console.WriteLine("Введите количество вершин: ");
+                ok = int.TryParse(Console.ReadLine(), out kstrok);
+                if (!ok || kstrok < 2) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число, не менее 2"); ok = false; }
+            } while (!ok);
+
+            ok = false;
+
+            do
+            {
+                Console.WriteLine("Введите количество ребер: ");
+                ok = int.TryParse(Console.ReadLine(), out kstolb);
+                if (!ok || kstolb <= 0 || kstolb > (kstrok * (kstrok - 1) / 2)) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите натуральное число не превышающее {0}", kstrok * (kstrok - 1) / 2); ok = false; }
+            } while (!ok);
+
+            int[,] a = new int[kstrok, kstolb];
+            for (int m = 0; m < kstolb; m++)
+            {
+                ok = false;
+                do
                 {
-                    if (a[j, i] == 0)
+                    int CountV = 0;
+                    for (int n = 0; n < kstrok; n++)
                     {
-                        estnull = true;
-                        for (m = 0; m < strok; m++)
+                        ok = false;
+                        Console.WriteLine("Введите элементы матрицы для {0} ребра: ", m + 1);
+                        do
                         {
-                            a[m, i] = 0;
-                        }
-                        stolbec--;
+                            ok = int.TryParse(Console.ReadLine(), out a[n, m]);
+                            if (!ok || a[n, m] < 0 || a[n, m] >= 2) { Console.WriteLine("Некорректный ввод. Пожалуйста, введите 1 или 0"); ok = false; }
+                        } while (!ok);
+                        if (a[n, m] == 1) { CountV++; }
+                        if (CountV == 2) { break; }
                     }
-                    if (estnull) break;
+                    if (CountV < 2) { Console.WriteLine("Некорректный ввод. Каждое ребро должно соединять 2 вершины"); ok = false; }
+                    else ok = true;
+                    if (CheckEdge(a, m)) { Console.WriteLine("Такое ребро уже существует, исправьте ввод"); ok = false; }
                 }
+                while (!ok);
             }
+            return a;
+        }
 
-            int[,] b = new int[strok, stolbec];
-            for (m = 0; m < stolbec; m++)
+        public static int[,] CreateTestingGrafs(bool Tree) // Функция ручного ввода двумерной матрицы 
+        {
+            Console.CursorTop += 4;
+            int[,] A = new int[0, 0];
+
+            if (Tree)
             {
-                x = 0;
-                for (i = 0; i < strok; i++)
-                {
-                    while (a[x, y] == 0)
-                    {
-                        y++;
-                    }
-                    b[i, m] = a[x, y];
-                    x++;
-                }
-                y++;
+                Console.WriteLine("Доподлино известно что данный граф является деревом: ");
+                A = new int[6, 5] { { 1, 0, 0, 0, 0 }, { 0, 1, 0, 0, 0 }, { 1, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 }, { 0, 0, 1, 1, 1 }, { 0, 0, 0, 0, 1 } }; ;
             }
-            return b;
+            else
+            {
+                Console.WriteLine("Доподлино известно что данный граф НЕ является деревом: ");
+                A = new int[7, 6] { { 1, 0, 0, 0, 0, 0 }, { 0, 1, 0, 0, 0, 0 }, { 1, 1, 1, 0, 0, 0 }, { 0, 0, 0, 1, 0, 1 }, { 0, 0, 1, 1, 1, 0 }, { 0, 0, 0, 0, 1, 1 }, { 0, 0, 0, 0, 0, 0 } }; ;
+            }
+            return A;
+        }
+
+        static bool CheckEdge(int[,] A, int Stolbec) // Проверка ребра на существование 
+        {
+            int Point1 = 0, Point2 = 0, Checking = 0;
+            bool Number = false;
+            for (int i = 0; i < A.GetLength(0); i++)
+            {
+                if (A[i, Stolbec] == 1 && Number) { Point2 = i; break; }
+                if (A[i, Stolbec] == 1 && !Number) { Point1 = i; Number = true; }
+            }
+            for (int i = 0; i < Stolbec; i++)
+            {
+                for (int j = 0; j < A.GetLength(0); j++)
+                {
+                    if (A[j, i] == A[Point1, Stolbec] && j == Point1) { Checking++; }
+                    if (A[j, i] == A[Point2, Stolbec] && j == Point2) { Checking++; }
+                }
+            }
+            if (Checking == 2) { return true; }
+            else return false;
+        }
+
+        static int[,] RandomEdge(int[,] A, int i, int S1) // Функция создания рандомного ребра 
+        {
+            Random S2 = new Random(S1);
+            Thread.Sleep(10);
+            A[S1, i] = 1;
+            bool Check = true;
+            while (Check)
+            {
+                int NU = S2.Next(0, A.GetLength(1));
+                if (A[NU, i] != 1) { A[NU, i] = 1; Check = false; }
+            }
+            return A;
+        }
+
+        static void IsTree(int[,] A) // Является ли граф деревом, алгоритм с помощью раскрашивания
+        {
+            if (A.GetLength(1) - A.GetLength(0) != 1)
+            {
+                bool[] IsColored = new bool[A.GetLength(0)];
+                IsColored[0] = true;
+                for (int j = 0; j < A.GetLength(0); j++)
+                {
+                    for (int i = 0; i < A.GetLength(1); i++)
+                    {
+                        if (A[j, i] == 1)
+                        {
+                            for (int Z = 0; Z < A.GetLength(0); Z++)
+                            {
+                                if (A[Z, i] == 1) { IsColored[Z] = true; }
+                            }
+                        }
+                    }
+                }
+                for(int i = 0; i < IsColored.Length; i++)
+                {
+                    if(IsColored[i] ==false) { Console.WriteLine("Граф НЕ является деревом"); return; }                   
+                }
+                Console.WriteLine("Граф является деревом");
+            }
+            else
+            {
+                Console.WriteLine("Граф НЕ является деревом так как каждое дерево с вершинами N имеет в точности N-1 ребро.");
+            }
         }
 
         static void Main(string[] args)  // основной листнинг программы 
         {
-            while (1 > 0)
-            {
-                int[,] Dvumer = new int[1, 1];
+            Console.WriteLine("Учебная практика №8, Власов Виктор");
+            Console.WriteLine("Граф задан матрицей инциденций. Выяснить, является ли он деревом.");
 
-                Dvumer = VvodMassiva2();
-                PrintMassiv(Dvumer);
-                Console.ReadLine();
+            int b = 0;
+            int[,] A;
+            while (1 > b)
+            {
+                switch (PunktMenu())
+                {
+                    case 0:
+                        A = CreateTestingGrafs(true); // Готовый граф который доподленно является деревом
+                        PrintMassiv(A);
+                        Console.WriteLine("Ответ программы: ");
+                        IsTree(A);
+                        A = CreateTestingGrafs(false); // Готовый граф который доподленно НЕ является деревом
+                        PrintMassiv(A);
+                        Console.WriteLine("Ответ программы: ");
+                        IsTree(A);
+                        Console.ReadLine();
+                        break;
+
+                    case 1:
+                        A = InputMatrixRandom();
+                        PrintMassiv(A);
+                        IsTree(A);
+                        Console.ReadLine();
+                        break;
+
+                    case 2:
+                        A = InputMatrixManual();
+                        PrintMassiv(A);
+                        IsTree(A);
+                        Console.ReadLine();
+                        break;
+
+                    case 3:
+                        b = 2;
+                        break;
+                }
             }
         }
     }
